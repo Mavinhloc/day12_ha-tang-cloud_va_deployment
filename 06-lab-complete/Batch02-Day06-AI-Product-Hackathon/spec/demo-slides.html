@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Tutor · Batch 02 Day 05 — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#0b0905;--bg2:#14100a;
+    --gold:#f5a623;--gold-bright:#ffc24b;--gold-soft:#ffd97d;--gold-deep:#b9750a;
+    --ink:#f7f0e2;--muted:#b9a784;--muted-2:#8a7c60;
+    --line:rgba(245,166,35,.16);--card:rgba(255,182,62,.045);--card-bd:rgba(245,166,35,.18);
+    --grad:linear-gradient(118deg,#ffe09a 0%,#ffc24b 38%,#f5a623 64%,#e07b00 100%);
+    --glow:0 0 40px rgba(245,166,35,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased;}
+
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .bg::before{content:"";position:absolute;inset:0;background:radial-gradient(1200px 700px at 78% -8%,rgba(255,170,40,.22),transparent 60%),radial-gradient(900px 600px at 10% 110%,rgba(185,117,10,.16),transparent 60%),linear-gradient(160deg,#0b0905 0%,#100c06 50%,#0a0804 100%);}
+  .bg .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,166,35,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(245,166,35,.06) 1px,transparent 1px);background-size:54px 54px;-webkit-mask:radial-gradient(110% 90% at 75% 0%,#000 25%,transparent 78%);mask:radial-gradient(110% 90% at 75% 0%,#000 25%,transparent 78%);opacity:.9;}
+  .bg .traces{position:absolute;inset:0;opacity:.5}
+
+  .deck{position:relative;z-index:2;height:100vh;width:100vw}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(36px,6vw,104px);opacity:0;visibility:hidden;transform:translateY(14px) scale(.995);transition:opacity .5s ease,transform .5s ease,visibility .5s;}
+  .slide.active{opacity:1;visibility:visible;transform:none}
+  .slide.prev{transform:translateY(-14px) scale(.995)}
+
+  .kicker{display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:18px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+  .kicker .num{color:var(--bg);background:var(--grad);font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.06em;}
+  h1{font-weight:800;line-height:1.04;letter-spacing:-.02em}
+  h2{font-size:clamp(28px,3.6vw,52px);font-weight:800;line-height:1.08;letter-spacing:-.02em;margin-bottom:8px}
+  .lead{color:var(--muted);font-size:clamp(15px,1.45vw,20px);max-width:60ch;line-height:1.55}
+  .gold{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .rule{height:3px;width:74px;border-radius:3px;background:var(--grad);margin:14px 0 26px;box-shadow:var(--glow)}
+
+  .slide.active .r{animation:rise .62s cubic-bezier(.2,.7,.2,1) both}
+  .slide.active .r:nth-child(1){animation-delay:.05s}
+  .slide.active .r:nth-child(2){animation-delay:.12s}
+  .slide.active .r:nth-child(3){animation-delay:.19s}
+  .slide.active .r:nth-child(4){animation-delay:.26s}
+  .slide.active .r:nth-child(5){animation-delay:.33s}
+  .slide.active .r:nth-child(6){animation-delay:.40s}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+  /* Cover */
+  #s-title{justify-content:center;align-items:flex-start}
+  .hero-wrap{position:relative;width:100%;max-width:1180px;margin:0 auto}
+  .hero-badge{display:inline-flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:26px;border:1px solid var(--card-bd);padding:9px 16px;border-radius:99px;background:rgba(245,166,35,.05);}
+  #s-title h1{font-size:clamp(48px,9.2vw,140px)}
+  .title-sub{margin-top:10px;font-size:clamp(20px,3vw,40px);font-weight:600;color:var(--ink);}
+  .title-desc{margin-top:28px;color:var(--muted);font-size:clamp(15px,1.5vw,20px);max-width:54ch;line-height:1.6}
+  .title-meta{display:flex;gap:28px;flex-wrap:wrap;margin-top:40px}
+  .title-meta .m{display:flex;flex-direction:column;gap:2px}
+  .title-meta .m b{font-size:clamp(22px,2.6vw,34px);font-weight:800;line-height:1}
+  .title-meta .m span{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+  .chip{position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:min(36vw,420px);aspect-ratio:1;display:none;}
+  @media(min-width:1100px){.chip{display:block}}
+  .chip .core{position:absolute;inset:24%;border-radius:14px;background:var(--grad);filter:blur(2px);box-shadow:0 0 80px 10px rgba(245,166,35,.5),inset 0 0 40px rgba(255,255,255,.4);animation:pulse 4s ease-in-out infinite;}
+  .chip .ring{position:absolute;border:1px solid var(--card-bd);border-radius:18px}
+  .chip .ring.a{inset:12%}.chip .ring.b{inset:0%;border-style:dashed;opacity:.5;animation:spin 60s linear infinite}
+  @keyframes pulse{0%,100%{filter:blur(2px) brightness(1)}50%{filter:blur(4px) brightness(1.25)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Agenda */
+  .agenda{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+  .ag-card{border:1px solid var(--card-bd);border-radius:16px;padding:22px 22px 24px;background:linear-gradient(180deg,rgba(255,182,62,.06),rgba(255,182,62,.015));position:relative;overflow:hidden;transition:transform .3s,border-color .3s;}
+  .ag-card:hover{transform:translateY(-4px);border-color:var(--gold)}
+  .ag-card .no{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold-bright);letter-spacing:.1em}
+  .ag-card h3{font-size:19px;font-weight:700;margin:10px 0 6px}
+  .ag-card p{font-size:13.5px;color:var(--muted);line-height:1.5}
+  .ag-card::after{content:"";position:absolute;right:-30px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(245,166,35,.25),transparent 70%)}
+
+  /* Generic */
+  .body{margin-top:6px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+  .cards{display:grid;gap:18px}
+  .cards.c2{grid-template-columns:repeat(2,1fr)}
+  .cards.c3{grid-template-columns:repeat(3,1fr)}
+  .cards.c4{grid-template-columns:repeat(4,1fr)}
+  .card{border:1px solid var(--card-bd);border-radius:16px;padding:22px 24px;background:linear-gradient(180deg,rgba(255,182,62,.055),rgba(255,182,62,.012));position:relative;}
+  .card .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;margin-bottom:15px;background:rgba(245,166,35,.1);border:1px solid var(--card-bd);}
+  .ic-svg{width:23px;height:23px}
+  .ic-svg,.pill-ic,.inline-ic{fill:none;stroke:var(--gold-bright);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .card .ic .ic-svg{filter:drop-shadow(0 0 8px rgba(245,166,35,.45))}
+  .pill-ic{width:16px;height:16px;margin-right:7px;flex-shrink:0}
+  .pill{display:inline-flex;align-items:center}
+  .inline-ic{width:17px;height:17px;vertical-align:-3px;margin-left:4px}
+  .hero-badge .pill-ic{stroke:var(--gold-soft)}
+  .card h3{font-size:17.5px;font-weight:700;margin-bottom:8px;color:var(--ink)}
+  .card h3 small{display:block;font-weight:500;font-size:12px;color:var(--gold-bright);font-family:'JetBrains Mono',monospace;letter-spacing:.08em;margin-bottom:3px}
+  .card p{font-size:13.8px;color:var(--muted);line-height:1.55}
+  .card ul{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:4px}
+  .card li{font-size:13.5px;color:var(--muted);line-height:1.5;padding-left:18px;position:relative}
+  .card li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:2px;background:var(--grad)}
+  .card li b{color:var(--ink);font-weight:600}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+  .stat{border:1px solid var(--card-bd);border-radius:16px;padding:20px 22px;background:var(--card)}
+  .stat .big{font-size:clamp(30px,3.6vw,46px);font-weight:800;line-height:1}
+  .stat .lab{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.4}
+
+  /* Topics */
+  .topics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 28px}
+  .topic{display:flex;align-items:flex-start;gap:14px;padding:9px 0;border-bottom:1px solid rgba(245,166,35,.09)}
+  .topic .tn{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--bg);background:var(--grad);min-width:30px;height:26px;border-radius:7px;display:grid;place-items:center;flex-shrink:0;margin-top:1px}
+  .topic .tt{font-size:14.5px;line-height:1.4}
+  .topic .tt b{font-weight:600}
+  .topic .tt span{color:var(--muted)}
+  .topic.ok .tn{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+
+  /* Pills */
+  .pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  .pill{border:1px solid var(--card-bd);background:rgba(245,166,35,.06);border-radius:99px;padding:9px 18px;font-size:14px;color:var(--ink)}
+  .pill b{color:var(--gold-bright)}
+
+  /* Flow row */
+  .flow{display:flex;align-items:center;gap:0;width:100%;margin-top:24px}
+  .flow-step{flex:1;text-align:center;background:rgba(245,166,35,.05);border:1px solid var(--card-bd);border-radius:14px;padding:20px 14px}
+  .flow-step .fs-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-bright);margin-bottom:8px}
+  .flow-step h4{font-size:15px;font-weight:700;margin-bottom:4px}
+  .flow-step p{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .flow-arrow{color:rgba(245,166,35,.4);font-size:22px;padding:0 8px;flex-shrink:0}
+
+  /* Code block */
+  .codeblock{background:#100c06;border:1px solid var(--card-bd);border-radius:12px;padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;width:100%;margin-top:16px}
+  .codeblock .kw{color:#c792ea}.codeblock .str{color:#c3e88d}.codeblock .fn{color:var(--gold-bright)}.codeblock .cm{color:#546e7a}
+
+  /* Quote */
+  .quote{border-left:3px solid var(--gold);border-radius:0 12px 12px 0;background:rgba(245,166,35,.06);padding:18px 24px;font-size:18px;font-style:italic;color:var(--ink);line-height:1.6;margin:20px 0;max-width:680px}
+
+  /* Comparison table */
+  .cmp{width:100%;border-collapse:collapse;margin-top:16px}
+  .cmp th{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-bright);padding:10px 16px;text-align:left;border-bottom:1px solid var(--card-bd)}
+  .cmp td{padding:11px 16px;font-size:14px;color:var(--muted);border-bottom:1px solid rgba(245,166,35,.06);line-height:1.5}
+  .cmp td b{color:var(--ink)}
+  .cmp td.yes{color:#4ade80;font-weight:600}
+  .cmp td.no{color:#f87171}
+  .cmp tr:last-child td{border-bottom:none}
+
+  /* Criteria list */
+  .criteria{list-style:none;margin-top:10px}
+  .criteria li{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid rgba(245,166,35,.08);font-size:16px}
+  .criteria li:last-child{border-bottom:none}
+  .criteria .ck{font-size:20px;flex-shrink:0;margin-top:1px}
+
+  /* Closing */
+  #s-end{align-items:center;text-align:center;justify-content:center}
+  #s-end h1{font-size:clamp(40px,7vw,104px)}
+  #s-end .lead{margin:22px auto 0}
+  .demo-url{margin:40px auto 0;display:inline-block;font-family:'JetBrains Mono',monospace;font-size:clamp(24px,3.6vw,56px);font-weight:700;color:var(--gold-bright);border:2px solid var(--gold);background:rgba(245,166,35,.08);padding:24px 52px;border-radius:18px;letter-spacing:.03em;box-shadow:0 0 40px rgba(245,166,35,.25),inset 0 0 0 1px rgba(255,255,255,.04)}
+
+  /* Nav */
+  .progress{position:fixed;top:0;left:0;height:3px;background:var(--grad);z-index:30;width:0;transition:width .45s ease;box-shadow:0 0 14px rgba(245,166,35,.6)}
+  .footer{position:fixed;left:clamp(24px,5vw,64px);bottom:22px;z-index:20;display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;color:var(--muted-2)}
+  .footer .b{color:var(--gold-bright);font-weight:700}
+  .nav{position:fixed;right:clamp(24px,5vw,64px);bottom:18px;z-index:20;display:flex;align-items:center;gap:10px}
+  .nav button{width:42px;height:42px;border-radius:11px;border:1px solid var(--card-bd);background:rgba(245,166,35,.06);color:var(--ink);cursor:pointer;font-size:18px;display:grid;place-items:center;transition:.2s;}
+  .nav button:hover{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+  .nav .count{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);min-width:54px;text-align:center}
+  .nav .count b{color:var(--ink)}
+  .dots{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:11px}
+  .dots button{width:9px;height:9px;border-radius:50%;border:none;background:rgba(245,166,35,.25);cursor:pointer;padding:0;transition:.25s}
+  .dots button.on{background:var(--grad);box-shadow:0 0 10px var(--gold);transform:scale(1.35)}
+  .hint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:15;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--muted-2);opacity:.8;transition:opacity .6s}
+  .hint.gone{opacity:0}
+
+  @media(max-width:820px){
+    .agenda,.cards.c2,.cards.c3,.cards.c4,.topics,.stats{grid-template-columns:1fr 1fr}
+    .dots{display:none}
+  }
+  @media(max-width:560px){.agenda,.cards.c2,.cards.c3,.cards.c4,.topics,.stats{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* Pain points scroll */
+  @keyframes scrollUp{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+  .pain-wall{overflow:hidden;flex:1;position:relative;margin-top:14px;
+    -webkit-mask:linear-gradient(transparent 0%,#000 10%,#000 90%,transparent 100%);
+    mask:linear-gradient(transparent 0%,#000 10%,#000 90%,transparent 100%);}
+  .pain-col{flex:1;overflow:hidden;}
+  .pain-scroll{animation:scrollUp linear infinite;}
+  .pain-msg{background:rgba(245,166,35,.04);border:1px solid rgba(245,166,35,.12);
+    border-radius:10px;padding:11px 14px;margin-bottom:8px;}
+  .pain-msg .name{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ffc24b;
+    letter-spacing:.06em;margin-bottom:5px;}
+  .pain-msg p{font-size:12.5px;color:#b9a784;line-height:1.55;margin:0;}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></symbol>
+  <symbol id="i-graduation" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/><path d="m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+</svg>
+
+<div class="bg" aria-hidden="true">
+  <div class="grid"></div>
+  <svg class="traces" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <g stroke="rgba(245,166,35,.22)" stroke-width="1.5" fill="none">
+      <path d="M0,120 H280 L320,160 H560"/><circle cx="560" cy="160" r="4" fill="rgba(245,166,35,.5)" stroke="none"/>
+      <path d="M1600,760 H1320 L1280,720 H980"/><circle cx="980" cy="720" r="4" fill="rgba(245,166,35,.5)" stroke="none"/>
+      <path d="M1600,260 H1460 L1420,300 V420"/><circle cx="1420" cy="420" r="4" fill="rgba(245,166,35,.5)" stroke="none"/>
+      <path d="M120,900 V700 L160,660 H300"/>
+    </g>
+  </svg>
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<!-- ① COVER -->
+<section class="slide" id="s-title">
+  <div class="hero-wrap">
+    <div class="chip" aria-hidden="true"><div class="ring b"></div><div class="ring a"></div><div class="core"></div></div>
+    <div class="hero-badge r"><svg class="pill-ic"><use href="#i-graduation"/></svg> Batch 02 · Day 05 — Mini Hackathon</div>
+    <h1 class="r"><span class="gold">AI Tutor</span></h1>
+    <div class="title-sub r">Trợ lý học tập thông minh</div>
+    <p class="title-desc r">Upload tài liệu buổi học → AI tóm tắt, tạo quiz, flashcards, study plan và giải thích mọi khái niệm ngay khi bạn cần — không cần gián đoạn lớp.</p>
+    <div class="title-meta r">
+      <div class="m"><b class="gold">~1–2s</b><span>Response time</span></div>
+      <div class="m"><b class="gold">6</b><span>AI features</span></div>
+      <div class="m"><b class="gold">13</b><span>Unit tests</span></div>
+      <div class="m"><b class="gold">LLaMA 3.3</b><span>via Groq API</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ② AGENDA -->
+<section class="slide" id="s-agenda">
+  <div class="kicker r"><span class="dot"></span> Nội dung trình bày</div>
+  <h2 class="r">Roadmap Demo — 10 phút</h2>
+  <div class="rule r"></div>
+  <div class="agenda">
+    <div class="ag-card r"><div class="no">01</div><h3>Problem</h3><p>Pain point thực tế: học viên không có chỗ hỏi phù hợp ngay trong lớp.</p></div>
+    <div class="ag-card r"><div class="no">02</div><h3>Solution</h3><p>AI Tutor với context khoá học, structured output và adaptive response.</p></div>
+    <div class="ag-card r"><div class="no">03</div><h3>6 Tính năng</h3><p>Chat, Tóm tắt, Quiz, Flashcards, Study Plan, Learning Objectives.</p></div>
+    <div class="ag-card r"><div class="no">04</div><h3>Live Demo</h3><p>3 paths: happy path · adaptive · file upload với tài liệu thật.</p></div>
+  </div>
+</section>
+
+<!-- ③ PROBLEM -->
+<section class="slide" id="s-problem">
+  <div class="kicker r"><span class="num">01</span> Problem</div>
+  <h2 class="r">Học viên <span class="gold">không hiểu</span> nhưng không có chỗ hỏi phù hợp</h2>
+  <div class="rule r"></div>
+  <div class="body">
+    <div class="stats r">
+      <div class="stat"><div class="big gold">😶</div><div class="lab">Ngại hỏi — sợ gián đoạn lớp, giữ câu hỏi lại đến quên</div></div>
+      <div class="stat"><div class="big gold">🤷</div><div class="lab">ChatGPT không biết context khoá học → giải thích lạc đề</div></div>
+      <div class="stat"><div class="big gold">📉</div><div class="lab">Hiểu sai 1 khái niệm → các bài sau càng khó tiếp thu</div></div>
+      <div class="stat"><div class="big gold">⏳</div><div class="lab">Hỏi sau buổi học: thầy bận, bạn không chắc, không có tool đúng</div></div>
+    </div>
+    <div class="quote r">"Mình không dám hỏi vì sợ làm mất thời gian của cả lớp — toàn đợi ra ngoài hỏi bạn, nhưng bạn cũng không chắc."</div>
+  </div>
+</section>
+
+<!-- ④ PAIN POINTS WALL -->
+<section class="slide" id="s-painwall" style="padding-top:clamp(28px,4vw,64px);padding-bottom:70px;">
+  <div class="kicker r"><span class="dot"></span> Evidence · Batch 02 · 29/05/2026</div>
+  <h2 class="r" style="margin-bottom:4px">Pain points thực tế — <span class="gold">~45 học viên chia sẻ</span></h2>
+  <div class="rule r" style="margin:10px 0 0"></div>
+  <div class="pain-wall r" style="display:flex;gap:14px;">
+
+    <!-- LEFT COL (speed: 75s) -->
+    <div class="pain-col">
+      <div class="pain-scroll" style="animation-duration:75s;">
+        <div class="pain-msg"><div class="name">Nguyễn Lý Minh Kỳ</div><p>Ít thời gian làm quen nền tảng (LMS, VApp, GitHub) → miss thông tin. Hướng dẫn exercise không chuẩn. Vấn đề nhà ở, ăn uống những ngày đầu.</p></div>
+        <div class="pain-msg"><div class="name">Bùi Minh Hiếu</div><p>Di chuyển quãng đường xa. App điểm danh khó dùng, không biết đã điểm danh được chưa. Wifi lag, thời gian nghỉ ngắn.</p></div>
+        <div class="pain-msg"><div class="name">Phạm Văn Khánh</div><p>Cần quy về 1 kênh thông tin chính thống thay vì Zalo nhóm + mail + Discord. Tối qua có workshop không phải xem cả 3 kênh vẫn không nắm được.</p></div>
+        <div class="pain-msg"><div class="name">Thái Thị Yến Nhi</div><p>Kênh thông báo không thống nhất: Discord, Teams, Zalo, Mail. Thông tin học vụ, sinh hoạt chưa rõ. Hướng dẫn lab và nộp bài chưa đủ rõ ràng.</p></div>
+        <div class="pain-msg"><div class="name">Lưu Tiến Duy</div><p>Chưa hiểu format nộp bài tập, nộp labs. Thời gian đầu bài lab dồn dập, chưa kịp thích ứng. Vấn đề điểm danh.</p></div>
+        <div class="pain-msg"><div class="name">Dương Trường Giang</div><p>Chưa nắm rõ techstack, chưa có tài liệu hướng dẫn kiến thức cơ sở. Task của lab hơi mơ hồ, chưa có hướng dẫn cụ thể.</p></div>
+        <div class="pain-msg"><div class="name">Đỗ Nhật Minh</div><p>Ngộp vì nhiều thông tin khi làm lab buổi chiều (cách nộp, cách đánh giá). Thắc mắc thiếu ổ điện, lấy áo sinh viên ở đâu, cách xin nghỉ. Khó di chuyển đến địa điểm học.</p></div>
+        <div class="pain-msg"><div class="name">Ng Mai Hồng Trâm</div><p>Vấn đề tìm trọ và hợp đồng, chi phí sinh hoạt tăng cao. Tài liệu + lịch học cập nhật sát giờ. Kênh liên lạc rải rác. Thời gian lớp chưa cover hết kiến thức.</p></div>
+        <div class="pain-msg"><div class="name">Phan Tân Hưng</div><p>Chưa theo kịp nhịp độ bài giảng. Phải dùng nhiều kênh thông tin liên tục. Hướng dẫn lab mơ hồ khiến khó thực hiện yêu cầu.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Minh Khoa</div><p>Kênh thông tin rời rạc, điểm danh gần như không có hướng dẫn cụ thể — nhiều bạn không điểm danh được. Cần hướng dẫn lab nhiều hơn. Lượng kiến thức lớn, trợ giảng còn ít.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Bùi T.Dũng</div><p>Cảm giác "ngộp" trước khái niệm mới — đặc biệt lúc làm lab: commit, API key, GitHub push. Chi phí khu Ocean Park đắt đỏ. Giảng viên ít, giảng nhanh chưa kịp tải.</p></div>
+        <div class="pain-msg"><div class="name">Trần Minh Hoàng</div><p>Khoảng cách xa, về đúng tắc đường. Tiện ích qua Gmail khó tiếp cận, thiếu hướng dẫn cụ thể. Nhiệm vụ lab khó cho người chưa có kinh nghiệm.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Hữu Đức</div><p>Thông tin tiện ích sinh viên chưa rõ. Nhu cầu coach lab tập trung trong thời gian ngắn → thiếu nhân lực. Yêu cầu lab chưa rõ, mô tả rối.</p></div>
+        <div class="pain-msg"><div class="name">Vũ Tuấn Hoàng</div><p>Lượng kiến thức lý thuyết lớn. Nhiều kênh thông tin khác nhau. Điểm danh ít thời gian.</p></div>
+        <div class="pain-msg"><div class="name">Tôn Thành Đạt</div><p>Đường xa, di chuyển lâu và tắc đường. Học liên tục khá mệt. Áp lực sắp xếp thời gian để kịp các buổi học.</p></div>
+        <div class="pain-msg"><div class="name">Hoàng Anh Thư</div><p>Thiếu địa điểm ăn trưa. Thời gian nghỉ trưa ngắn. Thiếu thang máy tòa E.</p></div>
+        <div class="pain-msg"><div class="name">Cao Việt Hoàng</div><p>Thông tin, hướng dẫn phân tán nhiều nơi, chưa thành một line. Chưa có cơ chế hiểu trình độ từng người → match team chưa đồng nhất.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Tuấn Dũng</div><p>Lượng kiến thức quá tải cho bạn không có background tech. Thời gian nghiên cứu và làm lab ngắn.</p></div>
+        <div class="pain-msg"><div class="name">Lê Thành Đạt</div><p>Thông tin thủ tục nhập học mơ hồ. Nhiều kênh giao tiếp, có thể mới với nhiều người. Thời gian thực hành gấp gáp, áp lực dung lượng học.</p></div>
+        <div class="pain-msg"><div class="name">Đặng Minh Hải</div><p>Học viên hỏi nhiều → lab coach không trả lời kịp. Tài liệu chưa public trước → không có thời gian chuẩn bị. Kiến thức 2 học kỳ nén thành 12 buổi.</p></div>
+        <div class="pain-msg"><div class="name">Phạm Trần Nguyên Phú</div><p>Quá nhiều thông tin cùng lúc, không biết bắt đầu từ đâu. Lỗi hệ thống (ví dụ điểm danh). Lab coach không bao quát hết lớp.</p></div>
+        <div class="pain-msg"><div class="name">Phạm Hoàng Anh</div><p>Chưa có người hỗ trợ kịp thời. Chưa có tài liệu phù hợp với level từng học viên. V-App xử lý UI/UX chưa tốt.</p></div>
+        <!-- DUPLICATE for seamless loop -->
+        <div class="pain-msg"><div class="name">Nguyễn Lý Minh Kỳ</div><p>Ít thời gian làm quen nền tảng (LMS, VApp, GitHub) → miss thông tin. Hướng dẫn exercise không chuẩn. Vấn đề nhà ở, ăn uống những ngày đầu.</p></div>
+        <div class="pain-msg"><div class="name">Bùi Minh Hiếu</div><p>Di chuyển quãng đường xa. App điểm danh khó dùng, không biết đã điểm danh được chưa. Wifi lag, thời gian nghỉ ngắn.</p></div>
+        <div class="pain-msg"><div class="name">Phạm Văn Khánh</div><p>Cần quy về 1 kênh thông tin chính thống thay vì Zalo nhóm + mail + Discord. Tối qua có workshop không phải xem cả 3 kênh vẫn không nắm được.</p></div>
+        <div class="pain-msg"><div class="name">Thái Thị Yến Nhi</div><p>Kênh thông báo không thống nhất: Discord, Teams, Zalo, Mail. Thông tin học vụ, sinh hoạt chưa rõ. Hướng dẫn lab và nộp bài chưa đủ rõ ràng.</p></div>
+        <div class="pain-msg"><div class="name">Lưu Tiến Duy</div><p>Chưa hiểu format nộp bài tập, nộp labs. Thời gian đầu bài lab dồn dập, chưa kịp thích ứng. Vấn đề điểm danh.</p></div>
+        <div class="pain-msg"><div class="name">Dương Trường Giang</div><p>Chưa nắm rõ techstack, chưa có tài liệu hướng dẫn kiến thức cơ sở. Task của lab hơi mơ hồ, chưa có hướng dẫn cụ thể.</p></div>
+        <div class="pain-msg"><div class="name">Đỗ Nhật Minh</div><p>Ngộp vì nhiều thông tin khi làm lab buổi chiều. Thắc mắc thiếu ổ điện, lấy áo sinh viên ở đâu. Khó di chuyển.</p></div>
+        <div class="pain-msg"><div class="name">Ng Mai Hồng Trâm</div><p>Vấn đề tìm trọ, chi phí tăng cao. Tài liệu cập nhật sát giờ. Kênh liên lạc rải rác.</p></div>
+        <div class="pain-msg"><div class="name">Phan Tân Hưng</div><p>Chưa theo kịp nhịp độ bài giảng. Nhiều kênh thông tin. Hướng dẫn lab mơ hồ.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Minh Khoa</div><p>Kênh thông tin rời rạc, điểm danh không có hướng dẫn. Cần hướng dẫn lab nhiều hơn. Lượng kiến thức lớn, trợ giảng ít.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Bùi T.Dũng</div><p>"Ngộp" trước khái niệm mới khi làm lab. Chi phí khu Ocean Park đắt đỏ. Giảng viên ít, giảng nhanh.</p></div>
+        <div class="pain-msg"><div class="name">Đặng Minh Hải</div><p>Lab coach không trả lời kịp. Tài liệu chưa public trước. Kiến thức 2 học kỳ nén thành 12 buổi.</p></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COL (speed: 90s) -->
+    <div class="pain-col">
+      <div class="pain-scroll" style="animation-duration:90s;animation-delay:-30s;">
+        <div class="pain-msg"><div class="name">Nguyen Van Quang</div><p>Lượng kiến thức nhiều và rộng, khó nắm bắt trong thời gian ngắn. Non-tech khó theo kiến thức kỹ thuật. Tech support chưa giải quyết hết vấn đề.</p></div>
+        <div class="pain-msg"><div class="name">Trần Diệu Linh</div><p>Thời gian làm bài lab quá ngắn, nộp ngay buổi học → không đủ thời gian hiểu sâu. Số lượng trợ giảng không đủ để hỗ trợ kịp thời.</p></div>
+        <div class="pain-msg"><div class="name">Trần Công Minh</div><p>Thông tin thông báo bị phân tán: Email cá nhân, email edu, kênh Zalo (vài kênh), Discord, Facebook group.</p></div>
+        <div class="pain-msg"><div class="name">Ha Vu Anh</div><p>Chưa làm quen nền tảng mới, khó truy cập học liệu. Canteen quá đông. Học liên tục không nghỉ gây burnout.</p></div>
+        <div class="pain-msg"><div class="name">Đặng Trần Đạt</div><p>Deadline. Khoảng cách di chuyển. Chi phí token.</p></div>
+        <div class="pain-msg"><div class="name">Đặng Sỹ Tiến</div><p>Chỗ ăn sau giờ học ngắn, tốn thời gian. Khoảng cách tới trợ giảng xa. Diễn giải assignment chưa chi tiết.</p></div>
+        <div class="pain-msg"><div class="name">Phạm Tiến Hưng</div><p>Nhiều bạn chưa có nền tảng → tiếp thu khó. Vibecode đôi khi mang lại hại nhiều hơn lợi khi lạm dụng để giải lab gấp.</p></div>
+        <div class="pain-msg"><div class="name">Mã Vĩnh Lộc</div><p>Lượng kiến thức nhiều chưa kịp học. Quá nhiều kênh giao tiếp. Tốn tiền mua AI.</p></div>
+        <div class="pain-msg"><div class="name">Đỗ Quốc An</div><p>Thời gian làm lab quá ngắn. Instruction chưa clear. Thực hành quá nhanh, không kịp hiểu để download và làm.</p></div>
+        <div class="pain-msg"><div class="name">Thiệu Quang Minh</div><p>Thiếu ngủ. Nhớ gia đình. Shock vì quá khó.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Văn Hoàng</div><p>Quá nhiều kiến thức, chỉ theo dõi kênh chính thức không cover hết. Khó tìm tài liệu kiến thức mới. Coach đang bận hết.</p></div>
+        <div class="pain-msg"><div class="name">Phùng Văn Thạch</div><p>Vấn đề thời gian là lớn nhất. Di chuyển từ nhà tới trường. Phải ngủ ít hơn.</p></div>
+        <div class="pain-msg"><div class="name">Mai Minh Tùng</div><p>Đường đến Vinuni quá xa. Vinuni quá to, bị lạc. Học chưa đủ đô.</p></div>
+        <div class="pain-msg"><div class="name">Nguyễn Dương Hiếu</div><p>Nhiều tài liệu nhưng hướng dẫn chưa chi tiết → khó follow. Quá nhiều nguồn thông tin, khó catch up hết.</p></div>
+        <div class="pain-msg"><div class="name">Võ Huyền Khánh Mây</div><p>App điểm danh khó dùng, dễ lỗi, UI/UX xấu. Câu hỏi đơn giản lặp lại nhưng trợ giảng không hỗ trợ kịp: lịch học, điểm danh, bến xe bus, nộp bài.</p></div>
+        <div class="pain-msg"><div class="name">Hoàng Kim Tuấn Anh</div><p>Quá nhiều kiến thức và tool mới → dễ overload. Khó chuyển ý tưởng AI sang workflow thực tế. Khó phối hợp nhóm khi mỗi người hiểu AI khác nhau.</p></div>
+        <div class="pain-msg"><div class="name">Trần Văn Toàn</div><p>Chi phí API LLM. Miền Nam ra, thức ăn không quen. Không có xe, xung quanh ít quán, đặt đồ ăn hơi đắt.</p></div>
+        <div class="pain-msg"><div class="name">Vương Sỹ Hạnh</div><p>V-App ngày đầu không đăng nhập được. Coach lab_1 hướng dẫn loạn, phải chỉnh liên tục. API Key phải tự chuẩn bị.</p></div>
+        <div class="pain-msg"><div class="name">Đoàn Minh Hiếu</div><p>Rất nhiều thông tin học viên mới cần biết, tài liệu cần làm → khó follow. Đi lại khó khăn, thời tiết và giao thông.</p></div>
+        <div class="pain-msg"><div class="name">Hoàng Long Vũ</div><p>Hệ thống bài tập chưa được kiểm kỹ → học viên gặp khó khăn khi làm và nộp. Tài nguyên chưa chuẩn bị kỹ → tốn thời gian tìm tài nguyên thay thế.</p></div>
+        <div class="pain-msg"><div class="name">Vũ Quang Vinh</div><p>"Pain point duy nhất: chị giảng viên bảo nể phục những bạn bỏ việc để theo khoá."</p></div>
+        <div class="pain-msg"><div class="name">Kiều Đức Long</div><p>Xuất cơm 50k.</p></div>
+        <!-- DUPLICATE for seamless loop -->
+        <div class="pain-msg"><div class="name">Nguyen Van Quang</div><p>Lượng kiến thức nhiều và rộng, khó nắm bắt trong thời gian ngắn. Non-tech khó theo kiến thức kỹ thuật.</p></div>
+        <div class="pain-msg"><div class="name">Trần Diệu Linh</div><p>Thời gian làm bài lab quá ngắn, nộp ngay buổi học. Số lượng trợ giảng không đủ hỗ trợ kịp thời.</p></div>
+        <div class="pain-msg"><div class="name">Trần Công Minh</div><p>Thông tin phân tán: Email cá nhân, email edu, Zalo, Discord, Facebook group.</p></div>
+        <div class="pain-msg"><div class="name">Ha Vu Anh</div><p>Chưa làm quen nền tảng mới. Canteen quá đông. Học liên tục không nghỉ gây burnout.</p></div>
+        <div class="pain-msg"><div class="name">Võ Huyền Khánh Mây</div><p>App điểm danh khó dùng, dễ lỗi. Câu hỏi đơn giản lặp lại nhưng không được hỗ trợ kịp.</p></div>
+        <div class="pain-msg"><div class="name">Hoàng Kim Tuấn Anh</div><p>Quá nhiều kiến thức và tool mới → dễ overload. Khó chuyển ý tưởng AI sang workflow thực tế.</p></div>
+        <div class="pain-msg"><div class="name">Đỗ Quốc An</div><p>Thời gian làm lab quá ngắn. Instruction chưa clear. Thực hành quá nhanh, không kịp hiểu.</p></div>
+        <div class="pain-msg"><div class="name">Thiệu Quang Minh</div><p>Thiếu ngủ. Nhớ gia đình. Shock vì quá khó.</p></div>
+        <div class="pain-msg"><div class="name">Phùng Văn Thạch</div><p>Vấn đề thời gian là lớn nhất. Di chuyển từ nhà tới trường. Phải ngủ ít hơn.</p></div>
+        <div class="pain-msg"><div class="name">Vũ Quang Vinh</div><p>"Chị giảng viên bảo nể phục những bạn bỏ việc để theo khoá."</p></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ⑤ SOLUTION -->
+<section class="slide" id="s-solution">
+  <div class="kicker r"><span class="num">02</span> Solution</div>
+  <h2 class="r">Một tài liệu upload — <span class="gold">toàn bộ workflow học tập</span></h2>
+  <div class="rule r"></div>
+  <div class="body">
+    <div class="flow r">
+      <div class="flow-step">
+        <div class="fs-tag">01 · Upload</div>
+        <h4>Tải tài liệu lên</h4>
+        <p>PDF / DOCX / TXT — sidebar nhận file, đọc tối đa 50,000 ký tự</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="fs-tag">02 · Auto</div>
+        <h4>AI tóm tắt ngay</h4>
+        <p>Summary tự động sinh ra trong sidebar — không cần nhấn nút</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="fs-tag">03 · Generate</div>
+        <h4>Tạo nội dung học</h4>
+        <p>Quiz · Flashcards · Study Plan · Objectives — mỗi thứ 1 click</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="fs-tag">04 · Chat</div>
+        <h4>Hỏi follow-up</h4>
+        <p>AI trả lời streaming, dùng context file, adaptive khi câu hỏi mơ hồ</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑤ FEATURES -->
+<section class="slide" id="s-features">
+  <div class="kicker r"><span class="num">03</span> Tính năng</div>
+  <h2 class="r">6 tính năng từ <span class="gold">1 tài liệu upload</span></h2>
+  <div class="rule r"></div>
+  <div class="body">
+    <div class="cards c3 r">
+      <div class="card">
+        <div class="ic"><svg class="ic-svg"><use href="#i-message"/></svg></div>
+        <h3><small>REAL-TIME</small>💬 Chat AI</h3>
+        <p>Hỏi bất kỳ câu hỏi nào — streaming response, multi-turn history, suggested starter questions.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg class="ic-svg"><use href="#i-file-text"/></svg></div>
+        <h3><small>TỰ ĐỘNG KHI UPLOAD</small>📋 AI Summary</h3>
+        <p>Tóm tắt tài liệu thành 4–6 bullet points ngay khi upload — không cần nhấn nút.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg class="ic-svg"><use href="#i-check"/></svg></div>
+        <h3><small>INTERACTIVE</small>🧪 Quiz Generator</h3>
+        <p>5 câu trắc nghiệm từ tài liệu — radio button, feedback real-time khi chọn đáp án.</p>
+      </div>
+    </div>
+    <div class="cards c3 r" style="margin-top:18px">
+      <div class="card">
+        <div class="ic"><svg class="ic-svg"><use href="#i-layers"/></svg></div>
+        <h3><small>FLIP ANIMATION</small>🃏 Flashcards</h3>
+        <p>5 thẻ thuật ngữ — lật thẻ để xem giải thích, hiển thị dạng grid 3 cột.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg class="ic-svg"><use href="#i-calendar"/></svg></div>
+        <h3><small>PERSONALIZED</small>📅 Study Plan</h3>
+        <p>Lịch học 1 ngày theo khung giờ sáng–trưa–chiều–tối từ nội dung tài liệu.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg class="ic-svg"><use href="#i-target"/></svg></div>
+        <h3><small>PROGRESS BAR</small>🎯 Learning Objectives</h3>
+        <p>5 mục tiêu học tập với checkbox — progress bar theo dõi hoàn thành.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑥ DEMO 3 PATHS -->
+<section class="slide" id="s-demo">
+  <div class="kicker r"><span class="num">04</span> Demo — End-to-End</div>
+  <h2 class="r">Các luồng chính của <span class="gold">AI Tutor</span></h2>
+  <div class="rule r"></div>
+  <div class="agenda" style="margin-top:12px">
+    <div class="ag-card r">
+      <div class="no">01</div>
+      <h3>💬 Happy Path</h3>
+      <p>Gõ "LangChain là gì?" → AI trả 3 phần: giải thích + code block + câu hỏi kiểm tra hiểu. Response ~1–2s.</p>
+    </div>
+    <div class="ag-card r">
+      <div class="no">02</div>
+      <h3>🔄 Adaptive Path</h3>
+      <p>Gõ "Tôi không hiểu" → AI hỏi lại: "Bạn đang bị stuck ở điểm nào cụ thể?" thay vì đoán mò.</p>
+    </div>
+    <div class="ag-card r">
+      <div class="no">03</div>
+      <h3>📄 File Upload</h3>
+      <p>Upload tài liệu → Summary tự động trong sidebar → hỏi về nội dung → AI dùng đúng context.</p>
+    </div>
+    <div class="ag-card r">
+      <div class="no">04</div>
+      <h3>🧪 Quiz Interactive</h3>
+      <p>Click "Tạo quiz" → 5 câu trắc nghiệm → chọn đáp án → feedback xanh/đỏ real-time + giải thích.</p>
+    </div>
+    <div class="ag-card r">
+      <div class="no">05</div>
+      <h3>🃏 Flashcard Flip</h3>
+      <p>5 thẻ thuật ngữ dạng grid → click "Lật thẻ" → xem giải thích. Nút "Lật tất cả" và "Reset".</p>
+    </div>
+    <div class="ag-card r">
+      <div class="no">06</div>
+      <h3>🎯 Objectives & Plan</h3>
+      <p>5 mục tiêu học tập + progress bar · Lịch học 1 ngày theo khung giờ từ nội dung tài liệu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ⑧ LIVE DEMO -->
+<section class="slide" id="s-end">
+  <div class="hero-badge r"><svg class="pill-ic"><use href="#i-zap"/></svg> Batch 02 · Day 05 · AI Thực Chiến</div>
+  <h1 class="r">Live <span class="gold">Demo</span></h1>
+  <p class="lead r">Upload tài liệu → AI tóm tắt → Quiz → Flashcards → Chat.<br>Tất cả trong 1 workflow, không cần setup.</p>
+  <div class="demo-url r">https://mavinhlocaitutor.streamlit.app/</div>
+</section>
+
+</div><!-- /deck -->
+
+<div class="footer"><span class="b">AI Tutor</span> · Batch 02 Day 05 — Demo Round 16:00</div>
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button id="prev" aria-label="Slide trước">‹</button>
+  <span class="count" id="count"><b>1</b> / 9</span>
+  <button id="next" aria-label="Slide sau">›</button>
+</div>
+<div class="hint" id="hint">← → di chuyển · F toàn màn hình</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsWrap=document.getElementById('dots');
+  const progress=document.getElementById('progress');
+  const countEl=document.getElementById('count');
+  const hint=document.getElementById('hint');
+  let i=0;
+
+  slides.forEach((_,k)=>{
+    const b=document.createElement('button');
+    b.setAttribute('aria-label','Slide '+(k+1));
+    b.addEventListener('click',()=>go(k));
+    dotsWrap.appendChild(b);
+  });
+  const dots=[...dotsWrap.children];
+
+  function go(n){
+    n=Math.max(0,Math.min(slides.length-1,n));
+    slides[i].classList.remove('active');
+    slides[i].classList.toggle('prev',n>i);
+    i=n;
+    slides.forEach((s,k)=>{if(k!==i)s.classList.remove('active')});
+    slides[i].classList.add('active');
+    slides[i].classList.remove('prev');
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    progress.style.width=((i)/(slides.length-1)*100)+'%';
+    countEl.innerHTML='<b>'+(i+1)+'</b> / '+slides.length;
+  }
+
+  document.getElementById('next').onclick=()=>go(i+1);
+  document.getElementById('prev').onclick=()=>go(i-1);
+
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(i+1)}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(i-1)}
+    else if(e.key==='Home'){go(0)}
+    else if(e.key==='End'){go(slides.length-1)}
+    else if(e.key.toLowerCase()==='f'){
+      if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+    hint.classList.add('gone');
+  });
+
+  let tx=0;
+  addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+  addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50){dx<0?go(i+1):go(i-1)}},{passive:true});
+
+  setTimeout(()=>hint.classList.add('gone'),5200);
+  go(0);
+</script>
+</body>
+</html>

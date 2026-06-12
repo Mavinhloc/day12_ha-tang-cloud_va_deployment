@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning OS 2.0 — AI-Powered Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b10;
+    --bg2: #0d1117;
+    --bg3: #111820;
+    --card: #141c26;
+    --card2: #1a2333;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8edf5;
+    --muted: #7a8ba0;
+    --dim: #3d4f65;
+    --accent: #4af0b0;
+    --accent2: #1de8ff;
+    --gold: #f5c842;
+    --purple: #a78bfa;
+    --coral: #ff6b6b;
+    --blue: #4fa3ff;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,240,176,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,240,176,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 4rem;
+    background: rgba(8,11,16,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #080b10 !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 1.3rem;
+    border-radius: 40px;
+    transition: all 0.2s !important;
+  }
+
+  .nav-cta:hover {
+    background: #6cf5bf !important;
+    color: #080b10 !important;
+    transform: translateY(-1px);
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 6rem;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px; height: 400px;
+    background: radial-gradient(ellipse, rgba(74,240,176,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(74,240,176,0.08);
+    border: 1px solid rgba(74,240,176,0.2);
+    border-radius: 40px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .tag-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .hero h1 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    max-width: 900px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.65;
+    font-weight: 300;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-actions {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #080b10;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    padding: 0.85rem 2.2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.25s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover {
+    background: #6cf5bf;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(74,240,176,0.3);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 400;
+    border: 1px solid var(--border2);
+    cursor: pointer;
+    padding: 0.85rem 2.2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.25s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .hero-stats {
+    margin-top: 4rem;
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .stat-item { text-align: center; }
+
+  .stat-num {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+
+  .stat-num span { color: var(--accent); }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  /* SCROLL INDICATOR */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--dim);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 1s 0.8s ease both;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--dim), transparent);
+    animation: scrollAnim 1.5s ease-in-out infinite;
+  }
+
+  @keyframes scrollAnim {
+    0%, 100% { transform: scaleY(1); opacity: 1; }
+    50% { transform: scaleY(0.6); opacity: 0.4; }
+  }
+
+  /* SECTIONS GENERAL */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 7rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 3rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 520px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* FEATURES */
+  .features-header { margin-bottom: 4rem; }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .feature-card {
+    background: var(--bg2);
+    padding: 2.5rem 2rem;
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(74,240,176,0), transparent);
+    transition: background 0.4s;
+  }
+
+  .feature-card:hover { background: var(--card2); }
+
+  .feature-card:hover::after {
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .feat-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .feat-icon.green { background: rgba(74,240,176,0.1); }
+  .feat-icon.blue { background: rgba(79,163,255,0.1); }
+  .feat-icon.purple { background: rgba(167,139,250,0.1); }
+  .feat-icon.gold { background: rgba(245,200,66,0.1); }
+  .feat-icon.coral { background: rgba(255,107,107,0.1); }
+  .feat-icon.cyan { background: rgba(29,232,255,0.1); }
+
+  .feature-card h3 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* SCORE SYSTEM */
+  .score-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .formula-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .formula-box::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74,240,176,0.08), transparent 70%);
+  }
+
+  .formula-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .formula {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    background: rgba(74,240,176,0.06);
+    border: 1px solid rgba(74,240,176,0.12);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    line-height: 2;
+    margin-bottom: 1.5rem;
+  }
+
+  .score-bars { display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .score-bar-item label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .score-bar-item label span { color: var(--text); font-weight: 500; }
+
+  .bar-track {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+
+  .bar-green { background: linear-gradient(90deg, var(--accent), #22d3a3); }
+  .bar-blue { background: linear-gradient(90deg, var(--blue), #60c0ff); }
+  .bar-purple { background: linear-gradient(90deg, var(--purple), #c4b5fd); }
+
+  .mastery-levels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .mastery-badge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+  }
+
+  .mastery-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-green { background: #4af0b0; }
+  .dot-blue { background: #4fa3ff; }
+  .dot-yellow { background: #f5c842; }
+  .dot-red { background: #ff6b6b; }
+
+  /* ACHIEVEMENTS */
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .badge-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .badge-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border2);
+    background: var(--card2);
+  }
+
+  .badge-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .badge-name {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  .badge-req {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .badge-tier {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+  }
+
+  .tier-gold { background: rgba(245,200,66,0.12); color: var(--gold); }
+  .tier-silver { background: rgba(180,180,200,0.12); color: #b0b8d0; }
+  .tier-bronze { background: rgba(200,130,80,0.12); color: #d4956a; }
+  .tier-platinum { background: rgba(167,139,250,0.12); color: var(--purple); }
+
+  /* DEMO PROFILE */
+  .demo-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 3rem;
+    margin-top: 3rem;
+  }
+
+  .demo-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .demo-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #080b10;
+    flex-shrink: 0;
+  }
+
+  .demo-info h3 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .demo-info p { color: var(--muted); font-size: 0.9rem; }
+
+  .demo-score {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .score-big {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 3rem;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .score-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .demo-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .metric-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+  }
+
+  .metric-value {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.2rem;
+  }
+
+  .metric-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .demo-skills {
+    margin-top: 1.5rem;
+  }
+
+  .skill-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+  }
+
+  .skill-name {
+    width: 160px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .skill-track {
+    flex: 1;
+    height: 5px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .skill-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .skill-pct {
+    width: 40px;
+    text-align: right;
+    font-weight: 500;
+    font-size: 0.85rem;
+  }
+
+  /* JOURNEY */
+  .journey-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin-top: 4rem;
+    position: relative;
+  }
+
+  .journey-steps::before {
+    content: '';
+    position: absolute;
+    top: 28px; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), var(--accent), var(--border2), transparent);
+    z-index: 0;
+  }
+
+  .journey-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-num {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .journey-step:hover .step-num {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(74,240,176,0.08);
+  }
+
+  .journey-step h4 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .journey-step p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+
+  /* CTA */
+  .cta-section {
+    text-align: center;
+    padding: 8rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(74,240,176,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-box {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 4rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .cta-box h2 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 2.5rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+
+  .cta-box p {
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    font-size: 1rem;
+    font-weight: 300;
+  }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--dim);
+    font-size: 0.85rem;
+  }
+
+  footer .nav-logo { font-size: 1rem; color: var(--muted); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* TAGS ROW */
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+
+  .tag {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 2rem; }
+    .nav-links { display: none; }
+    section { padding: 5rem 2rem; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .score-section { grid-template-columns: 1fr; gap: 3rem; }
+    .achievements-grid { grid-template-columns: 1fr 1fr; }
+    .demo-metrics { grid-template-columns: 1fr 1fr; }
+    .journey-steps { grid-template-columns: 1fr; gap: 2rem; }
+    .journey-steps::before { display: none; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+
+  @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .achievements-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2.5rem; }
+    .hero-stats { gap: 2rem; }
+    .mastery-levels { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="logo-dot"></span>
+    Learning OS <span style="color: var(--accent); margin-left: 2px;">2.0</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#scoring">Scoring</a></li>
+    <li><a href="#achievements">Achievements</a></li>
+    <li><a href="#journey">How it Works</a></li>
+    <li><a href="https://mavinhlocaitutor.streamlit.app/" class="nav-cta">Try Demo</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-tag">
+    <span class="tag-dot"></span>
+    AI-Powered Learning Management
+  </div>
+
+  <h1>
+    Learn Smarter.<br>
+    <span class="highlight">Grow Faster.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Upload any document and get instant summaries, quizzes, flashcards, and a personalized study plan — all powered by AI.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#demo" class="btn-primary">View Demo Profile</a>
+    <a href="#features" class="btn-outline">Explore Features</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">5<span>+</span></div>
+      <div class="stat-label">AI Features</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">100</div>
+      <div class="stat-label">Score Range</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Mastery Levels</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Skill Tracks</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="features-header reveal">
+    <div class="section-tag">✦ Core Features</div>
+    <h2 class="section-title">Everything you need<br>to learn effectively</h2>
+    <p class="section-sub">Six integrated tools that transform any document into a complete learning experience.</p>
+  </div>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <div class="feat-icon green">📚</div>
+      <h3>Smart LMS Copilot</h3>
+      <p>Upload a PDF or TXT and get an instant AI-generated summary, quiz, 5 flashcards, study plan, and learning objectives in seconds.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon blue">💬</div>
+      <h3>AI Tutor Chat</h3>
+      <p>Chat directly with AI about your document. Uses semantic search to retrieve the most relevant content and explain it with examples.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon purple">📊</div>
+      <h3>Learning Score</h3>
+      <p>A multi-factor score (0–100) combining quiz performance, content completion, and engagement into one clear progress metric.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon gold">✅</div>
+      <h3>Quiz & Scoring</h3>
+      <p>Auto-generated multiple-choice quizzes with real-time feedback, personalized recommendations, and learning score updates.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon coral">📅</div>
+      <h3>Personalized Study Plan</h3>
+      <p>Adaptive weekly schedules — 3 days for advanced learners, 7 days for beginners — with daily goals and focus areas.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon cyan">🏆</div>
+      <h3>Metrics & Badges</h3>
+      <p>Track 6 professional skills, earn achievement badges, monitor learning streaks, and view your complete analytics dashboard.</p>
+    </div>
+  </div>
+
+  <div class="tags-row reveal">
+    <span class="tag">Semantic Search</span>
+    <span class="tag">GPT-4o-mini</span>
+    <span class="tag">ChromaDB</span>
+    <span class="tag">Embeddings</span>
+    <span class="tag">Real-time Scoring</span>
+    <span class="tag">Gamification</span>
+    <span class="tag">Adaptive Learning</span>
+    <span class="tag">PDF/TXT Upload</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCORING -->
+<section id="scoring">
+  <div class="score-section">
+    <div class="reveal">
+      <div class="section-tag">✦ Scoring System</div>
+      <h2 class="section-title">Your score, scientifically calculated</h2>
+      <p class="section-sub">A weighted formula combining three key learning dimensions into a single, actionable score.</p>
+
+      <div class="mastery-levels">
+        <div class="mastery-badge">
+          <div class="mastery-dot dot-green"></div>
+          <div>
+            <div style="font-weight:500; font-size:0.9rem;">Expert</div>
+            <div style="font-size:0.78rem; color: var(--muted);">85–100</div>
+          </div>
+        </div>
+        <div class="mastery-badge">
+          <div class="mastery-dot dot-blue"></div>
+          <div>
+            <div style="font-weight:500; font-size:0.9rem;">Advanced</div>
+            <div style="font-size:0.78rem; color: var(--muted);">70–84</div>
+          </div>
+        </div>
+        <div class="mastery-badge">
+          <div class="mastery-dot dot-yellow"></div>
+          <div>
+            <div style="font-weight:500; font-size:0.9rem;">Intermediate</div>
+            <div style="font-size:0.78rem; color: var(--muted);">50–69</div>
+          </div>
+        </div>
+        <div class="mastery-badge">
+          <div class="mastery-dot dot-red"></div>
+          <div>
+            <div style="font-weight:500; font-size:0.9rem;">Beginner</div>
+            <div style="font-size:0.78rem; color: var(--muted);">0–49</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula-box reveal">
+      <div class="formula-title">Learning Score Formula</div>
+      <div class="formula">
+        Score = (Quiz × 0.40)<br>
+              + (Completion × 0.35)<br>
+              + (Engagement × 0.25)
+      </div>
+
+      <div class="score-bars">
+        <div class="score-bar-item">
+          <label>Quiz Score <span>40%</span></label>
+          <div class="bar-track">
+            <div class="bar-fill bar-green" style="width: 40%"></div>
+          </div>
+        </div>
+        <div class="score-bar-item">
+          <label>Completion Rate <span>35%</span></label>
+          <div class="bar-track">
+            <div class="bar-fill bar-blue" style="width: 35%"></div>
+          </div>
+        </div>
+        <div class="score-bar-item">
+          <label>Engagement Score <span>25%</span></label>
+          <div class="bar-track">
+            <div class="bar-fill bar-purple" style="width: 25%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.8rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+        <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 0.8rem;">Example calculation</div>
+        <div style="font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.9; color: var(--muted);">
+          Quiz: 85% · Completion: 100% · Engagement: 80%<br>
+          <span style="color: var(--text)">(85×0.4) + (100×0.35) + (80×0.25)</span><br>
+          <span style="color: var(--accent); font-size: 1rem;">= 89 → Expert 🏆</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ACHIEVEMENTS -->
+<section id="achievements">
+  <div class="reveal">
+    <div class="section-tag">✦ Gamification</div>
+    <h2 class="section-title">Earn badges as you grow</h2>
+    <p class="section-sub">Four professional achievement tiers reward your consistency, expertise, and commitment.</p>
+  </div>
+
+  <div class="achievements-grid">
+    <div class="badge-card reveal">
+      <span class="badge-emoji">🏆</span>
+      <div class="badge-name">Excellence Master</div>
+      <div class="badge-req">Reach a Learning Score of 85 or above</div>
+      <span class="badge-tier tier-gold">Gold</span>
+    </div>
+    <div class="badge-card reveal">
+      <span class="badge-emoji">📚</span>
+      <div class="badge-name">Persistent Learner</div>
+      <div class="badge-req">Complete 5 or more quiz attempts</div>
+      <span class="badge-tier tier-silver">Silver</span>
+    </div>
+    <div class="badge-card reveal">
+      <span class="badge-emoji">🎯</span>
+      <div class="badge-name">Knowledge Seeker</div>
+      <div class="badge-req">Achieve a Learning Score of 60+</div>
+      <span class="badge-tier tier-bronze">Bronze</span>
+    </div>
+    <div class="badge-card reveal">
+      <span class="badge-emoji">⭐</span>
+      <div class="badge-name">Expert Achiever</div>
+      <div class="badge-req">Complete 10 or more quiz attempts</div>
+      <span class="badge-tier tier-platinum">Platinum</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DEMO PROFILE -->
+<section id="demo">
+  <div class="reveal">
+    <div class="section-tag">✦ Demo Profile</div>
+    <h2 class="section-title">What excellence looks like</h2>
+    <p class="section-sub">A sample expert learner profile showing the full potential of Learning OS 2.0.</p>
+  </div>
+
+  <div class="demo-section reveal">
+    <div class="demo-header">
+      <div class="demo-avatar">AL</div>
+      <div class="demo-info">
+        <h3>Alex Learner</h3>
+        <p>Advanced Python Programming · 7-day streak 🔥</p>
+      </div>
+      <div class="demo-score">
+        <div class="score-big">88.5</div>
+        <div class="score-label">Expert Level · Top 5%</div>
+      </div>
+    </div>
+
+    <div class="demo-metrics">
+      <div class="metric-card">
+        <div class="metric-value" style="color: var(--accent)">12</div>
+        <div class="metric-label">Quiz Attempts</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" style="color: var(--blue)">85.3%</div>
+        <div class="metric-label">Avg Quiz Score</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" style="color: var(--purple)">4/5</div>
+        <div class="metric-label">Docs Completed</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" style="color: var(--gold)">92.3%</div>
+        <div class="metric-label">Path Progress</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 1rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);">Professional Skills</div>
+    <div class="demo-skills">
+      <div class="skill-item">
+        <div class="skill-name">Technical Knowledge</div>
+        <div class="skill-track"><div class="skill-fill" style="width: 92%"></div></div>
+        <div class="skill-pct">92%</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">Problem Solving</div>
+        <div class="skill-track"><div class="skill-fill" style="width: 89.5%"></div></div>
+        <div class="skill-pct">90%</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">Critical Thinking</div>
+        <div class="skill-track"><div class="skill-fill" style="width: 87.3%"></div></div>
+        <div class="skill-pct">87%</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">Communication</div>
+        <div class="skill-track"><div class="skill-fill" style="width: 88.5%"></div></div>
+        <div class="skill-pct">89%</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">Collaboration</div>
+        <div class="skill-track"><div class="skill-fill" style="width: 86%"></div></div>
+        <div class="skill-pct">86%</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">Time Management</div>
+        <div class="skill-track"><div class="skill-fill" style="width: 85%"></div></div>
+        <div class="skill-pct">85%</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+      <div style="margin-bottom: 1rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);">Badges Earned</div>
+      <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <span style="background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.2); color: var(--gold); border-radius: 30px; padding: 0.35rem 1rem; font-size: 0.85rem;">🏆 Excellence Master</span>
+        <span style="background: rgba(180,180,200,0.1); border: 1px solid rgba(180,180,200,0.2); color: #b0b8d0; border-radius: 30px; padding: 0.35rem 1rem; font-size: 0.85rem;">📚 Persistent Learner</span>
+        <span style="background: rgba(200,130,80,0.1); border: 1px solid rgba(200,130,80,0.2); color: #d4956a; border-radius: 30px; padding: 0.35rem 1rem; font-size: 0.85rem;">🎯 Knowledge Seeker</span>
+        <span style="background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); color: var(--purple); border-radius: 30px; padding: 0.35rem 1rem; font-size: 0.85rem;">⭐ Expert Achiever</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- JOURNEY -->
+<section id="journey">
+  <div class="reveal" style="text-align: center;">
+    <div class="section-tag">✦ How it Works</div>
+    <h2 class="section-title">Five steps to mastery</h2>
+    <p class="section-sub" style="margin: 0 auto;">From document upload to expert-level achievement, the complete learning journey.</p>
+  </div>
+
+  <div class="journey-steps">
+    <div class="journey-step reveal">
+      <div class="step-num">1</div>
+      <h4>Upload Document</h4>
+      <p>Drop any PDF or TXT and the AI processes, chunks, and embeds it instantly.</p>
+    </div>
+    <div class="journey-step reveal">
+      <div class="step-num">2</div>
+      <h4>Study & Learn</h4>
+      <p>Read the summary, review flashcards, and chat with the AI tutor for deep understanding.</p>
+    </div>
+    <div class="journey-step reveal">
+      <div class="step-num">3</div>
+      <h4>Complete Quiz</h4>
+      <p>Answer auto-generated MCQs and get instant feedback with personalized recommendations.</p>
+    </div>
+    <div class="journey-step reveal">
+      <div class="step-num">4</div>
+      <h4>Track Metrics</h4>
+      <p>Monitor your Learning Score, skill progress, badges, and streak on the dashboard.</p>
+    </div>
+    <div class="journey-step reveal">
+      <div class="step-num">5</div>
+      <h4>Follow Your Plan</h4>
+      <p>Execute your personalized weekly schedule adapted to your exact mastery level.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="cta-box reveal">
+    <h2>Start learning<br><span style="color: var(--accent)">the smart way</span></h2>
+    <p>Upload your first document and get a complete learning package in under 10 seconds.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="#" class="btn-primary">Get Started Free</a>
+      <a href="#features" class="btn-outline">Learn More</a>
+    </div>
+    <div style="margin-top: 2rem; font-size: 0.8rem; color: var(--dim);">
+      No signup required · PDF & TXT supported · AI-powered
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="nav-logo">
+    <span class="logo-dot"></span>
+    Learning OS 2.0
+  </a>
+  <div>Version 2.0 · Production Ready MVP · 2024</div>
+  <div style="color: var(--dim)">Built with GPT-4o-mini · ChromaDB · OpenAI Embeddings</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), 0);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Stagger siblings in a grid
+  document.querySelectorAll('.features-grid, .achievements-grid, .journey-steps').forEach(grid => {
+    grid.querySelectorAll('.reveal').forEach((el, i) => {
+      el.style.transitionDelay = (i * 0.08) + 's';
+    });
+  });
+</script>
+</body>
+</html>
