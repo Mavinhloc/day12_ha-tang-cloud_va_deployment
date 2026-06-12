@@ -1,7 +1,7 @@
 # Day 12 Lab - Mission Answers
 
-> **Student Name:** Mavinhloc  
-> **Student ID:** Batch02  
+> **Student Name:** Mã Vĩnh Lộc  
+> **Student ID:** 2A202600975  
 > **Date:** 2026-06-12
 
 ---
@@ -60,16 +60,16 @@ Multi-stage build loại bỏ toàn bộ build dependencies (gcc, libpq-dev) kh�
 
 ### Exercise 3.1: Railway / Render deployment
 
-- **Platform:** Render
-- **URL:** https://ai-agent-production.onrender.com
-- **Screenshot:** [screenshots/render-dashboard.png](screenshots/render-dashboard.png)
+- **Platform:** Railway
+- **URL:** https://day12ha-tang-cloudvadeployment-production-14f9.up.railway.app/
+- **Screenshot:** [screenshots/railway-dashboard.png](screenshots/railway-dashboard.png)
 
 Test commands:
 ```bash
-curl https://ai-agent-production.onrender.com/health
+curl https://day12ha-tang-cloudvadeployment-production-14f9.up.railway.app/health
 # {"status":"ok","version":"1.0.0","environment":"production",...}
 
-curl -X POST https://ai-agent-production.onrender.com/ask \
+curl -X POST https://day12ha-tang-cloudvadeployment-production-14f9.up.railway.app/ask \
   -H "X-API-Key: $AGENT_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"question": "What is deployment?"}'
